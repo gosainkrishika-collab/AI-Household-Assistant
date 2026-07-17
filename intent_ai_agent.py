@@ -126,16 +126,19 @@ Your ONLY responsibility is planning.
 If unsure, make the best possible classification based on the user's request.
 
 Here are some examples:
+
 User: Is the milk in the fridge still good?
 Intent: food_query
 
 User: My fridge is not cooling properly.
 Intent: appliance_query
+
 User: My thermostat is not working.
 Intent: appliance_query
 
 User: How much energy does my fridge use?
 Intent: energy_query
+
 User: Best thermostat setting to save electricity.
 Intent: energy_query
 """
