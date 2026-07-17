@@ -125,8 +125,6 @@ Your ONLY responsibility is planning.
 
 If unsure, make the best possible classification based on the user's request.
 
-Respond with ONLY the name of the intent category, e.g., 'food_query', 'appliance_query', 'energy_query', or 'unknown'. Do not provide any other text, explanations, or punctuation.
-
 Here are some examples:
 User: Is the milk in the fridge still good?
 Intent: food_query
