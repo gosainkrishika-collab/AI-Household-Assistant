@@ -4,22 +4,22 @@ from getpass import getpass
 os.environ["GROQ_API_KEY"] = getpass("Enter your Groq API key: ")
 
 #shared memory (intent agent)
-from typing import TypedDict
+from typing import TypedDict, List, Dict
 
 class HouseState(TypedDict):
     user_query: str
-    tasks: list
-    results: dict
+    tasks: List[Dict]
+    results: Dict
     final_response: str
 
-#function to input user query and modify state
-def input_node(state:HouseState)-> HouseState:
+#function to collect user query and initialize shared state
+def userinput_node(state:HouseState)-> HouseState:
     print("=== House Intake Form ===")
     user_query = input("Describe your household issue: ")
     return{
         "user_query" : user_query,
         "tasks" : [],
-        "resuslts" : {},
+        "results" : {},
         "final_response" : ""
     }
 
@@ -92,30 +92,42 @@ If no supported task exists, return an empty task list.
 
 Return ONLY valid JSON.
 
+Do NOT:
+
+- Answer the user's question.
+- Give recommendations.
+- Diagnose appliances.
+- Judge food safety.
+- Suggest energy-saving tips.
+
+Your ONLY responsibility is planning.
+
+If unsure, make the best possible classification based on the user's request.
+
 Output format:
 
 {
-  "tasks": [
-    {
-      "agent": "<food_safety | appliance_diagnosis | energy_saving>",
-      "query": "<relevant part of the user's request>"
-    }
-  ]
+    "tasks":[
+        {
+            "agent": "<food_safety | appliance_diagnosis | energy_saving>",
+            "query": "<relevant part of the user's request>"
+        }
+    ]
 }
 
-Examples
+Examples:
 
 User:
 "My fridge isn't cooling."
 
 Output:
 {
-  "tasks":[
-    {
-      "agent":"appliance_diagnosis",
-      "query":"My fridge isn't cooling."
-    }
-  ]
+    "tasks":[
+        {
+            "agent":"appliance_diagnosis",
+            "query":"My fridge isn't cooling."
+        }
+    ]
 }
 
 User:
@@ -123,16 +135,16 @@ User:
 
 Output:
 {
-  "tasks":[
-    {
-      "agent":"appliance_diagnosis",
-      "query":"My fridge isn't cooling."
-    },
-    {
-      "agent":"food_safety",
-      "query":"My milk expired yesterday."
-    }
-  ]
+    "tasks":[
+        {
+            "agent":"appliance_diagnosis",
+            "query":"My fridge isn't cooling."
+        },
+        {
+            "agent":"food_safety",
+            "query":"My milk expired yesterday."
+        }
+    ]
 }
 
 User:
@@ -140,15 +152,53 @@ User:
 
 Output:
 {
-  "tasks":[
-    {
-      "agent":"appliance_diagnosis",
-      "query":"My AC leaks water."
-    },
-    {
-      "agent":"energy_saving",
-      "query":"My electricity bill has doubled."
-    }
-  ]
+    "tasks":[
+        {
+            "agent":"appliance_diagnosis",
+            "query":"My AC leaks water."
+        },
+        {
+            "agent":"energy_saving",
+            "query":"My electricity bill has doubled."
+        }
+    ]
+}
+
+User:
+"My washing machine shakes and I have leftover pizza."
+
+Output:
+{
+    "tasks":[
+        {
+            "agent":"appliance_diagnosis",
+            "query":"My washing machine shakes."
+        },
+        {
+            "agent":"food_safety",
+            "query":"I have leftover pizza."
+        }
+    ]
+}
+
+User:
+"How do I reduce my electricity bill?"
+
+Output:
+{
+    "tasks":[
+        {
+            "agent":"energy_saving",
+            "query":"How do I reduce my electricity bill?"
+        }
+    ]
+}
+
+User:
+"Hello"
+
+Output:
+{
+    "tasks":[]
 }
 """
