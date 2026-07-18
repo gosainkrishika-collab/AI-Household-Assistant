@@ -28,10 +28,9 @@ class HouseState(TypedDict):
    energy_issue: str
    suspected_causes: List[str]
    #electricity analysis
-   appliance: str
-   usage: str
-   consumption: str
+   consumption: Literal["Low", "Moderate", "High", "Unknown"]
    estimated_reason: str
+   saving_suggestions: List[str]
    #--------------------
    final_response: str
 
@@ -61,10 +60,9 @@ def intake_node(state:HouseState)-> HouseState:
        "energy_issue": "",
        "suspected_causes": [],
        #electricity analysis
-       "appliance": "",
-       "usage": "",
-       "consumption": "",
+       "consumption": "Unknown",
        "estimated_reason": "",
+       "saving_suggestions": [],
        #----------------------
        "final response": ""
     }
@@ -245,5 +243,3 @@ def intent_query_agent(state: HouseState) -> HouseState:
     ])
     state["intent"] = response.content.strip()
     return state
-
-
