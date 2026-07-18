@@ -5,7 +5,7 @@ from getpass import getpass
 os.environ["GROQ_API_KEY"] = getpass("Enter your Groq API key:")
 
 #creatign the shared memory
-from typing import TypedDict, Literal, Optional
+from typing import TypedDict, Literal, Optional, List
 #creating house states(shared memeory)
 class HouseState(TypedDict):
    user_query: str
@@ -14,29 +14,60 @@ class HouseState(TypedDict):
    expiry_status: Literal['expired','fresh','unknown']
    expiry_date: Optional[str] # Made optional(field has a str value or nothing)
    safety_status: Literal['safe', 'unsafe', 'unknown']
-   appliance_problem: str
-   energy_analysis: str
-   recommendation: str
+   #--------------------------
+   #appliance diagnosis agent:
+   device: str
+   problem: str
+   symptoms: List[str]
+   #problem analysis
+   possible_causes: List[str]
+   #risk assessment
+   risk_level: Literal["Low","Medium","High","Critical","Unknown"]
+   risk_reason: str
+   #energy saving agent:
+   energy_issue: str
+   suspected_causes: List[str]
+   #electricity analysis
+   appliance: str
+   usage: str
+   consumption: str
+   estimated_reason: str
+   #--------------------
    final_response: str
 
-   #creating intake node
-   def intake_node(state:HouseState)-> HouseState:
-     print("=== House Intake Form ===")
-     name = input("Patient name: ")
-     user_query = input("Describe your problem: ")
-     return{
-      "name": name,
-      "user_query": user_query,
-      "intent": "unknown",
-      "food_item": "", #implies no specific food item has been identified
-      "expiry_status": "unknown", #implies that the state is currently undetermined
-      "expiry_date": "",
-      "safety_status": "unknown",
-      "appliance_problem": "",
-      "energy_analysis": "",
-      "recommendation": "",
-      "final response": "",
-  }
+#creating intake node
+def intake_node(state:HouseState)-> HouseState:
+    print("=== House Intake Form ===")
+    name = input("Patient name: ")
+    user_query = input("Describe your problem: ")
+    return{
+       "user_query": user_query,
+       "intent": "unknown",
+       "food_item": "", #implies no specific food item has been identified
+       "expiry_status": "unknown", #implies that the state is currently undetermined
+       "expiry_date": "",
+       "safety_status": "unknown",
+       #-------------------
+       #appliance diagnosis
+       "device": "",
+       "problem": "",
+       "symptoms": [],
+       #problem analysis
+       "possible_causes": [],
+       #risk assessment
+       "risk_level": "Unknown",
+       "risk_reason": "",
+       #energy saving
+       "energy_issue": "",
+       "suspected_causes": [],
+       #electricity analysis
+       "appliance": "",
+       "usage": "",
+       "consumption": "",
+       "estimated_reason": "",
+       #----------------------
+       "final response": ""
+    }
 
 
 # creatign router node
