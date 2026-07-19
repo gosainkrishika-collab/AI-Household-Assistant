@@ -9,7 +9,7 @@ from typing import TypedDict, Literal, Optional, List
 #creating house states(shared memeory)
 class HouseState(TypedDict):
    user_query: str
-   intent: Literal['food_query', 'appliance_query', 'energy_query', 'unknown']
+   intent: List[Literal['food_query', 'appliance_query', 'energy_query', 'unknown']]
    food_item: str
    expiry_status: Literal['expired','fresh','unknown']
    expiry_date: Optional[str] # Made optional(field has a str value or nothing)
@@ -45,11 +45,10 @@ class HouseState(TypedDict):
 #creating intake node
 def intake_node(state:HouseState)-> HouseState:
     print("=== House Intake Form ===")
-    name = input("Patient name: ")
     user_query = input("Describe your problem: ")
     return{
        "user_query": user_query,
-       "intent": "unknown",
+       "intent": [],
        "food_item": "", #implies no specific food item has been identified
        "expiry_status": "unknown", #implies that the state is currently undetermined
        "expiry_date": "",
@@ -79,7 +78,8 @@ def intake_node(state:HouseState)-> HouseState:
        "estimated_reason": "",
        "saving_suggestions": [],
        #----------------------
-       "final response": ""
+       "recommendations": [],
+       "final_response": ""
     }
 
 
@@ -127,7 +127,7 @@ Examples:
 - "My microwave sparks."
 - "The AC is leaking water."
 
-3. energy_saving
+3. energy_query
 Use this agent whenever the user asks about:
 - electricity bills
 - saving electricity
@@ -165,96 +165,40 @@ Your ONLY responsibility is planning.
 
 If unsure, make the best possible classification based on the user's request.
 
-Respond with ONLY the name of the intent category, e.g., 'food_query', 'appliance_query', 'energy_query', or 'unknown'. Do not provide any other text, explanations, or punctuation.
+Respond with ONLY a valid JSON object. Do not provide any other text, explanations, or punctuation.
 
 Here are some examples:
-User: Is the milk in the fridge still good?
-Intent: food_query
+User: Is the milk in the fridge still good? My fridge is not cooling properly.
+Response: {"intents": ["food_query", "appliance_query"]}
 
-User: My fridge is not cooling properly.
-Intent: appliance_query
-User: My thermostat is not working.
-Intent: appliance_query
+User: How much energy does my fridge use? My thermostat is not working.
+Response: {"intents": ["energy_query", "appliance_query"]}
 
-User: How much energy does my fridge use?
-Intent: energy_query
-User: Best thermostat setting to save electricity.
-Intent: energy_query
+User: My electricity bill is too high.
+Response: {"intents": ["energy_query"]}
+
+User: Can I eat this apple? And how can I save electricity?
+Response: {"intents": ["food_query", "energy_query"]}
+
+User: What is the capital of France?
+Response: {"intents": []}
 """
 
-# Hard safety-net keywords with assigned weights (1-5), overriding the LLM if matched.
-# Higher weights indicate higher priority for that keyword.
-# You can adjust these weights as needed.
 
-FOOD_QUERY_KEYWORDS = {
-    "food": 3, "gluten": 3, "lactose": 3, "egg": 3, "meat": 3, "chicken": 3, "fish": 3, "rice": 5, "bread": 3, "milk": 4, "cheese": 3, "butter": 3, "yogurt": 3, "banana": 3, "apple": 3, "orange": 3, "potato": 3, "tomato": 3, "onion": 3,
-    "pasta": 3, "pizza": 3, "burger": 3, "eat": 3, "recipe": 5, "cook": 5, "ingredient": 3, "meal": 5, "breakfast": 3, "lunch": 3, "dinner": 3, "diet": 3, "nutrition": 3, "fridge": 2, "refrigerator": 2, "pantry": 3, "expiration": 5,
-    "fresh": 4, "spoiled": 5, "safe to eat": 5, "fruit": 3, "vegetable": 3, "dairy": 3, "seafood": 3, "grain": 3, "beverages": 3, "snack": 3, "rotten": 5, "mold": 5, "food poisoning": 5, "freeze": 3, "leftovers": 3, "reheat": 3
-}
-
-APPLIANCE_QUERY_KEYWORDS = {
-    "appliance": 3, "refrigerator": 4, "fridge": 4, "air fryer": 3, "oven": 3, "microwave": 3, "dishwasher": 3, "washing machine": 3, "dryer": 3, "stove": 3, "cooktop": 3, "blender": 3, "grinder": 3, "toaster": 3, "chimney": 3, "exhaust fan": 3, "coffee maker": 3, "vacuum": 3, "air conditioner": 3, "AC": 3, "fan": 3, "water purifier": 3, "geyser": 3, "water heater": 3, "induction": 3, "electric kettle": 3, "kettle": 3, "mixer": 3, "thermostat": 4, "smart home device": 3, "broken": 5, "repair": 5, "fix": 5, "malfunction": 5, "problem": 4, "error": 4, "not working": 5, "not cooling": 5, "overheating": 5, "water leakage": 5, "strange noise": 4, "loud noise": 4, "vibration": 4, "smoke": 5, "burning smell": 5, "spark": 5, "power failure": 5, "low performance": 4, "slow": 4, "stopped working": 5, "temperature": 3, "setting": 3, "manual": 3, "troubleshoot": 4
-}
-
-ENERGY_QUERY_KEYWORDS = {
-    "energy": 3, "consumption": 3, "smart home": 3, "electricity": 4, "power": 4, "bill": 5, "cost": 4, "usage": 3, "monitor": 3, "efficiency": 4, "save energy": 5, "energy saving": 5, "carbon footprint": 3, "green energy": 3, "solar": 3, "wind": 3, "battery": 3, "grid": 3, "utilities": 4, "meter": 3, "peak hours": 3, "off-peak hours": 3, "thermostat setting": 4, "HVAC": 3, "heating": 3, "cooling": 3, "light": 3, "lighting": 3, "water heater energy": 3, "insulation": 3, "drafts": 3, "leakage": 3, "renewable": 3, "non-renewable": 3, "kilowatt": 3, "watt": 3, "joule": 3, "Btu": 3, "gas": 3, "propane": 3, "fuel": 3, "tariff": 3, "provider": 3, "utility company": 3, "energy audit": 3, "conservation": 3, "emission": 3
-}
-
-# FunctiON for calculatign score for each dictionary
-def score_count(user_query,keyword_dict):
-  score =0
-  query = user_query.lower()
-  for keyword, weight in keyword_dict.items(): # keyword is there in dictionary
-    if keyword in query: # keyword is in user query also
-      score += weight # weight of the keyeord is assigned to the score
-  return score
-
-
-#aFunction to calculate score for each dictionary
-def route_intent(user_query: str):
-
-    print("=== Intent Router ===")
-
-    user_query = user_query.lower()
-
-    food_score = score_count(user_query, FOOD_QUERY_KEYWORDS)
-    appliance_score = score_count(user_query, APPLIANCE_QUERY_KEYWORDS)
-    energy_score = score_count(user_query, ENERGY_QUERY_KEYWORDS)
-
-    scores = {
-        "food_query": food_score,
-        "appliance_query": appliance_score,
-        "energy_query": energy_score
-    }
-
-    print(scores)
-    best_intent = max(scores, key=scores.get)
-    highest = scores[best_intent]
-    sorted_scores = sorted(scores.values(), reverse=True)
-
-    # No keyword matched
-    if highest == 0:
-        return llm_route(user_query)
-
-    # Ambiguous query
-    if sorted_scores[0] - sorted_scores[1] <= 2:
-        return llm_route(user_query)
-
-    return best_intent
-
-# Using llm if the score =0 or difference between 2 scores is less than 2
-def llm_route(user_query):
-   response = llm.invoke([
-       SystemMessage(content=INTENT_SYSTEM_PROMPT),
-       HumanMessage(content=user_query)
-    ])
-   return response.content.strip()
 #importing the library
 import json
+
 def intent_query_agent(state: HouseState) -> HouseState:
     response = llm.invoke([
         SystemMessage(content=INTENT_SYSTEM_PROMPT),
-        HumanMessage(content=state['user_query'])
+        HumanMessage(content=state["user_query"])
     ])
-    state["intent"] = response.content.strip()
+
+    try:
+        parsed_response = json.loads(response.content)
+        state["intent"] = parsed_response.get("intents", [])
+    except json.JSONDecodeError:
+        print("Error: Could not parse JSON response from LLM.")
+        state["intent"] = []
+
     return state
