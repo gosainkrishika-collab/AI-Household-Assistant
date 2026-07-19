@@ -196,7 +196,7 @@ def intent_query_agent(state: HouseState) -> HouseState:
 
     try:
         parsed_response = json.loads(response.content)
-        state["intent"] = parsed_response.get("intents", [])
+        state["intent"] = parsed_response.get("intent", [])
     except json.JSONDecodeError:
         print("Error: Could not parse JSON response from LLM.")
         state["intent"] = []
