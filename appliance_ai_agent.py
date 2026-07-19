@@ -172,6 +172,10 @@ def appliance_agent_node(state: HouseState)-> HouseState:
 
     print("=== Appliance Diagnosis Agent ===")
 
+    #check if query needs this agent
+    if "appliance_query" not in state["intent"]:
+        return state
+
     #calling the llm
     response = llm.invoke([
         SystemMessage(content = APPLIANCE_AGENT_SYSTEM_PROMPT),

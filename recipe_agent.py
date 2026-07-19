@@ -82,11 +82,18 @@ User: Suggest a quick dessert.
 def recipe_agent(state: HouseState) -> HouseState:
     print("=== Recipe Agent ===")
 
+    #check if query needs this agent
+    if "food_query" not in state["intent"]:
+        return state
+    
+    if state["safety_status"] != "safe":
+        return state
+
     # Combine user query and any identified food item for better context
     query_for_llm = state['user_query']
     if state['food_item'] and state['food_item'] != 'unknown':
         query_for_llm = f"Recipe using {state['food_item']} and the original request: {state['user_query']}"
-#check if state of food item is not empty("") and unknown
+    #check if state of food item is not empty("") and unknown
     response = llm.invoke([
         SystemMessage(content=RECIPE_AGENT_PROMPT),
         HumanMessage(content=query_for_llm)

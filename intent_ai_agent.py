@@ -45,7 +45,7 @@ class HouseState(TypedDict):
 #creating intake node
 def intake_node(state:HouseState)-> HouseState:
     print("=== House Intake Form ===")
-    user_query = input("Describe your problem: ")
+    user_query = input("Describe your household issue: ")
     return{
        "user_query": user_query,
        "intent": [],
@@ -145,7 +145,6 @@ Rules:
 
 - A single user message may contain multiple independent tasks.
 - Detect ALL valid tasks.
-- Split the user's request into separate queries whenever necessary.
 - Never merge unrelated tasks into one.
 - Preserve the user's original wording as much as possible.
 
@@ -169,16 +168,16 @@ Respond with ONLY a valid JSON object. Do not provide any other text, explanatio
 
 Here are some examples:
 User: Is the milk in the fridge still good? My fridge is not cooling properly.
-Response: {"intent": ["food_safety", "appliance_diagnosis"]}
+Response: {"intent": ["food_query", "appliance_query"]}
 
 User: How much energy does my fridge use? My thermostat is not working.
-Response: {"intent": ["energy_saving", "appliance_diagnosis"]}
+Response: {"intent": ["energy_query", "appliance_query"]}
 
 User: My electricity bill is too high.
-Response: {"intent": ["energy_saving"]}
+Response: {"intent": ["energy_query"]}
 
 User: Can I eat this apple? And how can I save electricity?
-Response: {"intent": ["food_safety", "energy_saving"]}
+Response: {"intent": ["food_query", "energy_query"]}
 
 User: What is the capital of France?
 Response: {"intent": []}
@@ -196,7 +195,7 @@ def intent_query_agent(state: HouseState) -> HouseState:
 
     try:
         parsed_response = json.loads(response.content)
-        state["intent"] = parsed_response.get("intent", [])
+        state["intent"] = list(set(parsed_response.get("intent", []))) #to ensure it doesn't return duplicate values
     except json.JSONDecodeError:
         print("Error: Could not parse JSON response from LLM.")
         state["intent"] = []

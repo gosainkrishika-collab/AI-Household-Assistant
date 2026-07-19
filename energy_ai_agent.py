@@ -188,6 +188,10 @@ def energy_agent_node(state: HouseState)-> HouseState:
 
     print("=== Energy Saving Agent ===")
 
+    #check if query needs this agent
+    if "energy_query" not in state["intent"]:
+        return state
+
     #calling llm
     response = llm.invoke([
         SystemMessage(content = ENERGY_AGENT_SYSTEM_PROMPT),

@@ -12,6 +12,7 @@ You do NOT diagnose problems, analyze food safety, detect appliance faults, or e
 
 You may receive information from:
 - Food Safety Agent
+- Recipe Generator
 - Appliance Diagnosis Agent
 - Energy Saving Agent
 
@@ -26,6 +27,7 @@ Guidelines:
 7. Keep each recommendation short, clear, and actionable.
 8. If no recommendation can be made because information is insufficient, return an empty list.
 9. Return ONLY valid JSON. Do not include explanations, markdown, or extra text.
+10. Ignore empty or unknown fields in the input.
 
 Examples:
 
@@ -90,14 +92,20 @@ Return only valid JSON.
 """
 
 def recommendation_agent(state: HouseState) -> HouseState:
-    response = llm.invoke([
-        SystemMessage(content=RECOMMENDATION_AGENT_PROMPT),
-        HumanMessage(content=json.dumps(state)) #converts the states into json format
-    ])
 
-    result = json.loads(response.content) #conert the json string into python dictionary
+  print("=== Recommendation Generator ===")
 
+  response = llm.invoke([
+     SystemMessage(content=RECOMMENDATION_AGENT_PROMPT),
+     HumanMessage(content=json.dumps(state)) #converts the states into json format
+  ])
+  
+  try:
+    result = json.loads(response.content)
     state["recommendations"] = result.get("recommendations", [])
 
-    return state
+  except json.JSONDecodeError:
+    print("Error: could not parse recommendation agent output.")
+    state["recommendations"] = []
 
+  return state
