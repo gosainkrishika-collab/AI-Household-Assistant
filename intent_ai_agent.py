@@ -14,6 +14,13 @@ class HouseState(TypedDict):
    expiry_status: Literal['expired','fresh','unknown']
    expiry_date: Optional[str] # Made optional(field has a str value or nothing)
    safety_status: Literal['safe', 'unsafe', 'unknown']
+   
+   #recipe generator
+   recipe_name: str
+   ingredients: List[str]
+   instructions: List[str]
+   cook_time: str
+   
    #--------------------------
    #appliance diagnosis agent:
    device: str
@@ -48,11 +55,11 @@ def intake_node(state:HouseState)-> HouseState:
        "expiry_date": "",
        "safety_status": "unknown",
         
-        #recipe genrator
-        "recipe_name": str,
-        "ingredients": List[str],
-        "instructions": List[str],
-        "cook_time": str,
+        #recipe generator
+        "recipe_name": "",
+        "ingredients": [],
+        "instructions": [],
+        "cook_time": "",
        
        #-------------------
        #appliance diagnosis
