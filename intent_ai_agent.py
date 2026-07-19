@@ -46,6 +46,13 @@ def intake_node(state:HouseState)-> HouseState:
        "expiry_status": "unknown", #implies that the state is currently undetermined
        "expiry_date": "",
        "safety_status": "unknown",
+        
+        #recipe genrator
+        "recipe_name": str,
+        "ingredients": List[str],
+        "instructions": List[str],
+        "cook_time": str,
+       
        #-------------------
        #appliance diagnosis
        "device": "",
