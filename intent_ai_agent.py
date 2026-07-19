@@ -1,4 +1,4 @@
-# import the api
+
 # import the libraries
 import os
 from getpass import getpass
@@ -6,10 +6,8 @@ os.environ["GROQ_API_KEY"] = getpass("Enter your Groq API key:")
 
 #creatign the shared memory
 from typing import TypedDict, Literal, Optional, List
-
 #creating house states(shared memeory)
 class HouseState(TypedDict):
-   name:str
    user_query: str
    intent: Literal['food_query', 'appliance_query', 'energy_query', 'unknown']
    food_item: str
@@ -21,19 +19,18 @@ class HouseState(TypedDict):
    device: str
    problem: str
    symptoms: List[str]
-   #problem analyzer agent:
+   #problem analysis
    possible_causes: List[str]
-   #risk assessment agent:
+   #risk assessment
    risk_level: Literal["Low","Medium","High","Critical","Unknown"]
    risk_reason: str
    #energy saving agent:
    energy_issue: str
    suspected_causes: List[str]
-   #electricity analyzer agent:
-   appliance: str
-   usage: str
-   consumption: str
+   #electricity analysis
+   consumption: Literal["Low", "Moderate", "High", "Unknown"]
    estimated_reason: str
+   saving_suggestions: List[str]
    #--------------------
    final_response: str
 
@@ -43,7 +40,6 @@ def intake_node(state:HouseState)-> HouseState:
     name = input("Patient name: ")
     user_query = input("Describe your problem: ")
     return{
-       "name": name,
        "user_query": user_query,
        "intent": "unknown",
        "food_item": "", #implies no specific food item has been identified
@@ -55,7 +51,7 @@ def intake_node(state:HouseState)-> HouseState:
        "device": "",
        "problem": "",
        "symptoms": [],
-       #problem analyzer
+       #problem analysis
        "possible_causes": [],
        #risk assessment
        "risk_level": "Unknown",
@@ -63,11 +59,10 @@ def intake_node(state:HouseState)-> HouseState:
        #energy saving
        "energy_issue": "",
        "suspected_causes": [],
-       #electricity analyzer
-       "appliance": "",
-       "usage": "",
-       "consumption": "",
+       #electricity analysis
+       "consumption": "Unknown",
        "estimated_reason": "",
+       "saving_suggestions": [],
        #----------------------
        "final response": ""
     }
@@ -155,20 +150,19 @@ Your ONLY responsibility is planning.
 
 If unsure, make the best possible classification based on the user's request.
 
-Here are some examples:
+Respond with ONLY the name of the intent category, e.g., 'food_query', 'appliance_query', 'energy_query', or 'unknown'. Do not provide any other text, explanations, or punctuation.
 
+Here are some examples:
 User: Is the milk in the fridge still good?
 Intent: food_query
 
 User: My fridge is not cooling properly.
 Intent: appliance_query
-
 User: My thermostat is not working.
 Intent: appliance_query
 
 User: How much energy does my fridge use?
 Intent: energy_query
-
 User: Best thermostat setting to save electricity.
 Intent: energy_query
 """
@@ -219,11 +213,8 @@ def route_intent(user_query: str):
     }
 
     print(scores)
-
     best_intent = max(scores, key=scores.get)
-
     highest = scores[best_intent]
-
     sorted_scores = sorted(scores.values(), reverse=True)
 
     # No keyword matched
@@ -243,3 +234,12 @@ def llm_route(user_query):
        HumanMessage(content=user_query)
     ])
    return response.content.strip()
+#importing the library
+import json
+def intent_query_agent(state: HouseState) -> HouseState:
+    response = llm.invoke([
+        SystemMessage(content=INTENT_SYSTEM_PROMPT),
+        HumanMessage(content=state['user_query'])
+    ])
+    state["intent"] = response.content.strip()
+    return state
