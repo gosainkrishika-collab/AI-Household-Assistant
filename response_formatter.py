@@ -94,3 +94,23 @@ Output:
 I'm sorry, but I don't have enough information to provide any recommendations at the moment.
 """
 
+#response formatter langgraph node
+def response_formatter_node(state: HouseState)-> HouseState:
+    #converts structured output from previous agents into clear, user-friendly response
+
+    print("=== Response Formatter ===")
+
+    try:
+        #calling llm
+        response = llm.invoke([
+            SystemMessage(content = RESPONSE_FORMATTER_SYSTEM_PROMPT),
+            HumanMessage(content = json.dumps(state))
+        ])
+        
+        #updating state
+        state["final_response"] = response.content.strip()
+
+    except:
+        state["final_response"] = ("I'm sorry, but I couldn't generate a response at the moment.")
+
+    return state
