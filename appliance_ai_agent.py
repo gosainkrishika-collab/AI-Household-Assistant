@@ -1,11 +1,10 @@
 #imports
 import json
 
-from langchain_groq import ChatGroq
 from langchain_core.messages import SystemMessage, HumanMessage
 
 #import the shared state and chatgroq instance
-from intent import HouseState, llm
+from intent_ai_agent import HouseState, llm
 
 #system prompt
 APPLIANCE_AGENT_SYSTEM_PROMPT = """
