@@ -32,6 +32,7 @@ class HouseState(TypedDict):
    estimated_reason: str
    saving_suggestions: List[str]
    #--------------------
+   recommendations:List[str]
    final_response: str
 
 #creating intake node
