@@ -14,8 +14,7 @@ You may receive information from:
 - Food Safety Agent
 - Appliance Diagnosis Agent
 - Energy Saving Agent
-- Safety Agent (if available)
-- Other household agents
+
 
 Guidelines:
 1. Use only the information provided by other agents.
