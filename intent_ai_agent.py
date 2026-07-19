@@ -9,7 +9,7 @@ from typing import TypedDict, Literal, Optional, List
 #creating house states(shared memeory)
 class HouseState(TypedDict):
    user_query: str
-   intent: List[Literal['food_query', 'appliance_query', 'energy_query', 'unknown']]
+   intent: List[Literal['food_query', 'appliance_query', 'energy_query']]
    food_item: str
    expiry_status: Literal['expired','fresh','unknown']
    expiry_date: Optional[str] # Made optional(field has a str value or nothing)
@@ -127,7 +127,7 @@ Examples:
 - "My microwave sparks."
 - "The AC is leaking water."
 
-3. energy_query
+3. energy_saving
 Use this agent whenever the user asks about:
 - electricity bills
 - saving electricity
@@ -169,19 +169,19 @@ Respond with ONLY a valid JSON object. Do not provide any other text, explanatio
 
 Here are some examples:
 User: Is the milk in the fridge still good? My fridge is not cooling properly.
-Response: {"intents": ["food_query", "appliance_query"]}
+Response: {"intent": ["food_safety", "appliance_diagnosis"]}
 
 User: How much energy does my fridge use? My thermostat is not working.
-Response: {"intents": ["energy_query", "appliance_query"]}
+Response: {"intent": ["energy_saving", "appliance_diagnosis"]}
 
 User: My electricity bill is too high.
-Response: {"intents": ["energy_query"]}
+Response: {"intent": ["energy_saving"]}
 
 User: Can I eat this apple? And how can I save electricity?
-Response: {"intents": ["food_query", "energy_query"]}
+Response: {"intent": ["food_safety", "energy_saving"]}
 
 User: What is the capital of France?
-Response: {"intents": []}
+Response: {"intent": []}
 """
 
 
