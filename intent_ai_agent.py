@@ -1,6 +1,4 @@
 # import the api
-!pip install -qU langgraph langchain-groq pandas
-
 # import the libraries
 import os
 from getpass import getpass
