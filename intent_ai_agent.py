@@ -1,8 +1,10 @@
 
 # import the libraries
 import os
-from getpass import getpass
-os.environ["GROQ_API_KEY"] = getpass("Enter your Groq API key:")
+
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+if not GROQ_API_KEY:
+    raise ValueError("GROQ_API_KEY environment variable is not set.")
 
 #creatign the shared memory
 from typing import TypedDict, Literal, Optional, List
@@ -44,10 +46,8 @@ class HouseState(TypedDict):
 
 #creating intake node
 def intake_node(state:HouseState)-> HouseState:
-    print("=== House Intake Form ===")
-    user_query = input("Describe your household issue: ")
     return{
-       "user_query": user_query,
+       "user_query": state["user_query"],
        "intent": [],
        "food_item": "", #implies no specific food item has been identified
        "expiry_status": "unknown", #implies that the state is currently undetermined
@@ -87,7 +87,7 @@ def intake_node(state:HouseState)-> HouseState:
 from langchain_groq import ChatGroq # enable node to chat with groq api
 from langchain_core.messages import SystemMessage, HumanMessage #system message:system prompt, Human Message: Human prompt
 
-llm = ChatGroq(model="llama-3.3-70b-versatile", temperature=0) #temp high, llm mre creative if temp =1, LLM creativity high
+llm = ChatGroq(model="llama-3.3-70b-versatile", temperature=0, api_key=GROQ_API_KEY) #temp high, llm mre creative if temp =1, LLM creativity high
 
 INTENT_SYSTEM_PROMPT = """You are the Task Planning Agent for a Smart Household Assistant.
 
