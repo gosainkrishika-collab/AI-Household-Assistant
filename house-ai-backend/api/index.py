@@ -13,7 +13,7 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-         "https://ai-household-assistant-p86f.vercel.app/",
+         "https://ai-household-assistant-p86f.vercel.app",
         "http://localhost:5173",  # local Vite dev server
     ],
     allow_credentials=True,
