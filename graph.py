@@ -1,6 +1,6 @@
 #imports
 from langgraph.graph import StateGraph, END
-
+from IPython.display import Image, display
 from intent_ai_agent import HouseState, intake_node, intent_query_agent
 from food_safety_agent import food_safety_agent
 from recipe_agent import recipe_agent
@@ -37,6 +37,14 @@ builder.add_edge("response_formatter", END)
 
 #compile the graph
 graph = builder.compile()
+
+#printing the graph
+png_data = graph.get_graph().draw_mermaid_png()
+
+with open("house_ai_graph.png", "wb") as f:
+    f.write(png_data)
+
+print("Graph saved as house_ai_graph.png")
 
 #temp test block
 if __name__ == "__main__":
