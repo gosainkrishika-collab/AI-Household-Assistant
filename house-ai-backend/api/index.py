@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from graph import graph
 
 app = FastAPI()
 
@@ -12,7 +13,11 @@ def home():
 
 @app.post("/chat")
 def chat(request: ChatRequest):
+
+    final_state = graph.invoke({
+        "user_query": request.message
+    })
+
     return {
-        "response": "Hello from House AI",
-        "agent": "general"
+        "response": final_state["final_response"]
     }
