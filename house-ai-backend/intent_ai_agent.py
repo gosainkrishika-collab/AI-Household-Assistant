@@ -87,7 +87,7 @@ def intake_node(state:HouseState)-> HouseState:
 from langchain_groq import ChatGroq # enable node to chat with groq api
 from langchain_core.messages import SystemMessage, HumanMessage #system message:system prompt, Human Message: Human prompt
 
-llm = ChatGroq(model="llama-3.3-70b-versatile", temperature=0, api_key=GROQ_API_KEY) #temp high, llm mre creative if temp =1, LLM creativity high
+llm = ChatGroq(model="openai/gpt-oss-120b", temperature=0, api_key=GROQ_API_KEY) #temp high, llm mre creative if temp =1, LLM creativity high
 
 INTENT_SYSTEM_PROMPT = """You are the Task Planning Agent for a Smart Household Assistant.
 
