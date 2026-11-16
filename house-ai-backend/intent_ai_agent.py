@@ -9,10 +9,9 @@ if not GROQ_API_KEY:
 
 from dotenv import load_dotenv
 import os
-
-load_dotenv()
-
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+from env import groq_api_key
+'''load_dotenv()
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")'''
 
 
 #creatign the shared memory
@@ -96,7 +95,7 @@ def intake_node(state:HouseState)-> HouseState:
 from langchain_groq import ChatGroq # enable node to chat with groq api
 from langchain_core.messages import SystemMessage, HumanMessage #system message:system prompt, Human Message: Human prompt
 
-llm = ChatGroq(model="openai/gpt-oss-120b", temperature=0, api_key=GROQ_API_KEY) #temp high, llm mre creative if temp =1, LLM creativity high
+llm = ChatGroq(model="openai/gpt-oss-120b", temperature=0, api_key=groq_api_key) #temp high, llm mre creative if temp =1, LLM creativity high
 
 INTENT_SYSTEM_PROMPT = """You are the Task Planning Agent for a Smart Household Assistant.
 
@@ -119,6 +118,15 @@ Examples:
 - "My milk expired yesterday."
 - "How should I store cooked rice?"
 - "Suggest a recipe using eggs and tomatoes."
+- "How do I make rice pudding?"
+- "Give me a recipe for milk pudding."
+- "How can I prepare vegetable pulao?"
+- "Tell me how to make chocolate cake."
+- "What ingredients are needed for kheer?"
+
+IMPORTANT:
+A user does NOT need to provide ingredients to request a recipe.
+If the user mentions a dish and asks how to make it, ALWAYS classify it as food_query.
 
 2. appliance_diagnosis
 Use this agent whenever the user reports:
@@ -190,6 +198,12 @@ Response: {"intent": ["food_query", "energy_query"]}
 
 User: What is the capital of France?
 Response: {"intent": []}
+
+User: How do I make rice pudding?
+Response: {"intent": ["food_query"]}
+
+User: Give me a recipe for milk pudding.
+Response: {"intent": ["food_query"]}
 """
 
 

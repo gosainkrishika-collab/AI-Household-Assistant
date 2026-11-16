@@ -28,6 +28,8 @@ Guidelines:
 8. If no recommendation can be made because information is insufficient, return an empty list.
 9. Return ONLY valid JSON. Do not include explanations, markdown, or extra text.
 10. Ignore empty or unknown fields in the input.
+11. Recipe generation is handled by the Recipe Agent.Do not generate, modify, or repeat recipes.If recipe information is present without any household
+    issue requiring recommendations, return an empty list.
 
 Examples:
 
@@ -91,21 +93,51 @@ The recommendations list may contain zero, one, or multiple recommendations depe
 Return only valid JSON.
 """
 
+
 def recommendation_agent(state: HouseState) -> HouseState:
 
-  print("=== Recommendation Generator ===")
+    print("=== Recommendation Generator ===")
 
-  response = llm.invoke([
-     SystemMessage(content=RECOMMENDATION_AGENT_PROMPT),
-     HumanMessage(content=json.dumps(state)) #converts the states into json format
-  ])
-  
-  try:
-    result = json.loads(response.content)
-    state["recommendations"] = result.get("recommendations", [])
+    # Collect relevant information from other agents
+    agent_outputs = {
+        "food_item": state["food_item"],
+        "expiry_status": state["expiry_status"],
+        "safety_status": state["safety_status"],
+        "expiry_date": state["expiry_date"],
+        "device": state["device"],
+        "problem": state["problem"],
+        "possible_causes": state["possible_causes"],
+        "risk_level": state["risk_level"],
+        "risk_reason": state["risk_reason"],
+        "energy_issue": state["energy_issue"],
+        "consumption": state["consumption"],
+        "estimated_reason": state["estimated_reason"],
+        "saving_suggestions": state["saving_suggestions"]
+    }
 
-  except json.JSONDecodeError:
-    print("Error: could not parse recommendation agent output.")
-    state["recommendations"] = []
+    # No additional recommendations for recipe-only requests
+    has_other_issue = (
+        state["safety_status"] == "unsafe"
+        or bool(state["device"])
+        or bool(state["energy_issue"])
+    )
 
-  return state
+    if not has_other_issue:
+        state["recommendations"] = []
+        return state
+
+    try:
+        response = llm.invoke([
+            SystemMessage(content=RECOMMENDATION_AGENT_PROMPT),
+            HumanMessage(content=json.dumps(agent_outputs))
+        ])
+
+        result = json.loads(response.content)
+
+        state["recommendations"] = result.get("recommendations", [])
+
+    except (json.JSONDecodeError, TypeError, ValueError) as e:
+        print("Recommendation Agent Error:", e)
+        state["recommendations"] = []
+
+    return state

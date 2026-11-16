@@ -13,6 +13,8 @@ Instructions:
 
 Return ONLY a valid JSON object. Do not include any other text, explanations, or punctuation outside the JSON.
 
+
+    
 Examples:
 User: Give me a recipe for chicken.
 {
@@ -79,21 +81,41 @@ User: Suggest a quick dessert.
 }
 """
 
+
 def recipe_agent(state: HouseState) -> HouseState:
     print("=== Recipe Agent ===")
 
-    #check if query needs this agent
     if "food_query" not in state["intent"]:
         return state
-    
-    if state["safety_status"] != "safe":
+
+    # Check whether the user is asking about food safety
+    query = state["user_query"].lower()
+
+    safety_keywords = [
+        "safe to eat", "spoiled", "expired",
+        "rotten", "smells bad", "gone bad",
+        "is it safe", "can i eat",
+        "can i use", "contaminated",
+         "food poisoning", "moldy", "mouldy"
+
+    ]
+
+    is_safety_query = any(
+        keyword in query for keyword in safety_keywords
+    )
+
+    # Do not generate recipes using unsafe food
+    if is_safety_query and state["safety_status"] != "safe":
         return state
 
-    # Combine user query and any identified food item for better context
-    query_for_llm = state['user_query']
-    if state['food_item'] and state['food_item'] != 'unknown':
-        query_for_llm = f"Recipe using {state['food_item']} and the original request: {state['user_query']}"
-    #check if state of food item is not empty("") and unknown
+    query_for_llm = state["user_query"]
+
+    if state["food_item"] and state["food_item"] != "unknown":
+        query_for_llm = (
+            f"Recipe using {state['food_item']}. "
+            f"Original request: {state['user_query']}"
+        )
+
     response = llm.invoke([
         SystemMessage(content=RECIPE_AGENT_PROMPT),
         HumanMessage(content=query_for_llm)
@@ -101,10 +123,11 @@ def recipe_agent(state: HouseState) -> HouseState:
 
     try:
         parsed_response = json.loads(response.content)
-        state['recipe_name'] = parsed_response.get('recipe_name', '')
-        state['ingredients'] = parsed_response.get('ingredients', [])
-        state['instructions'] = parsed_response.get('instructions', [])
-        state['cook_time'] = parsed_response.get('cook_time', '')
+
+        state["recipe_name"] = parsed_response.get("recipe_name", "")
+        state["ingredients"] = parsed_response.get("ingredients", [])
+        state["instructions"] = parsed_response.get("instructions", [])
+        state["cook_time"] = parsed_response.get("cook_time", "")
 
     except json.JSONDecodeError:
         print("Error: Could not parse JSON response from LLM for recipe.")

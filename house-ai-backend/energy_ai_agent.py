@@ -72,22 +72,37 @@ Examples:
 - Schedule regular appliance maintenance.
 - Replace very old appliances with energy-efficient models if appropriate.
 
+
+
 Rules:
 
-- Analyze only the information provided by the user together with reasonable household energy knowledge.
+- Analyze the user's energy-related query using the information provided and reasonable household energy knowledge.
+- Support both general energy-saving queries and specific household energy problems.
+- If the user asks for general ways to save electricity, provide practical energy-saving suggestions even if no electricity bill, appliance details, or consumption figures are provided.
+- For general energy-saving queries, set energy_issue to "General electricity saving".
+- Do not invent household consumption figures or assume that the user's consumption is High, Moderate, or Low without sufficient evidence.
+- If consumption cannot be estimated, use "Unknown".
+- If no specific causes can be identified, use an empty list [] for suspected_causes.
+- Provide at least 4-5 useful saving suggestions for general energy-saving queries.
+- For specific energy problems, tailor suggestions to the reported issue.
 - Do NOT provide repair instructions.
 - Do NOT diagnose appliance faults unrelated to energy consumption.
-- Do NOT answer the user's original question directly.
+- Do NOT answer the user's original question directly outside the required JSON.
 - Return ONLY valid JSON.
 - Do NOT include explanations outside the required JSON.
+- When the user asks for general electricity-saving advice, always generate useful suggestions instead of treating missing household data as a reason to return an empty list.
+Missing information handling:
 
-If any field cannot be identified:
+- Use "Unknown" for energy_issue only when the energy concern itself cannot be identified.
+- Use "Unknown" for consumption when insufficient data is available.
+- Use "Insufficient information" for estimated_reason when the reason cannot be determined.
+- Use an empty list [] for suspected_causes when no causes can be identified.
+- Do not leave saving_suggestions empty for general electricity-saving questions.
 
-- Use "Unknown" for Energy Issue.
-- Use an empty list [] for Suspected Causes.
-- Use "Unknown" for Consumption.
-- Use "Insufficient information" for Estimated Reason.
-- Use an empty list [] for Saving Suggestions.
+consumption-estimation rule:
+- Treat consumption levels in examples as contextual estimates, not fixed rules.
+- Use "Unknown" when the available information does not justify a reliable consumption estimate.
+- Do not classify consumption as High merely because an appliance operates continuously.
 
 Return ONLY valid JSON in the following format:
 
@@ -212,8 +227,17 @@ def energy_agent_node(state: HouseState)-> HouseState:
 
         #energy saving suggestions
         state["saving_suggestions"] = result.get("saving_suggestions", [])
+        required_fields = [
+        "energy_issue",
+        "suspected_causes",
+        "consumption",
+        "estimated_reason",
+        "saving_suggestions"
+        ]
 
-    except json.JSONDecodeError:
+        if not all(field in result for field in required_fields):
+            raise ValueError("Missing required fields")
+    except (json.JSONDecodeError,ValueError):
 
         print("Error: Invalid JSON returned by the LLM.")
 
