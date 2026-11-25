@@ -95,9 +95,11 @@ def chat(request: ChatRequest, user=Depends(get_current_user)):
     # Generate YouTube link for recipe responses
     youtube_link = None
 
-    if isinstance(answer, str) and "recipe" in answer.lower():
-        youtube_link = get_youtube_link(request.message)
+    if isinstance(answer, str):
+        answer_lower = answer.lower()
 
+    if "ingredients:" in answer_lower and "instructions:" in answer_lower:
+        youtube_link = get_youtube_link(request.message)
     # Save response in database
     query_id = database.save_query(
         user["id"],
