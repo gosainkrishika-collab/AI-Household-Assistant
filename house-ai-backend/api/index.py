@@ -6,7 +6,7 @@ import database
 from auth import hash_password, check_password, get_token, get_current_user
 from youtube_service import get_youtube_link
 # Create the database tables the first time the server starts
-database.init_db()
+#database.init_db()
 
 app = FastAPI()
 
@@ -106,7 +106,8 @@ def chat(request: ChatRequest, user=Depends(get_current_user)):
         request.message,
         answer
     )
-
+    print("AI RESPONSE:", answer)
+    print("YOUTUBE LINK:", youtube_link)
     return {
         "response": answer,
         "youtube_link": youtube_link,
