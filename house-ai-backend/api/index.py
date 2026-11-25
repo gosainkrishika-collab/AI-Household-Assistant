@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from graph import graph
 import database
 from auth import hash_password, check_password, get_token, get_current_user
-
+from youtube_service import get_youtube_link
 # Create the database tables the first time the server starts
 database.init_db()
 
@@ -92,13 +92,25 @@ def chat(request: ChatRequest, user=Depends(get_current_user)):
 
     answer = final_state["final_response"]
 
-    # Save it so it shows up on the History page
-    query_id = database.save_query(user["id"], request.message, answer)
+    # Generate YouTube link for recipe responses
+    youtube_link = None
+
+    if isinstance(answer, str) and "recipe" in answer.lower():
+        youtube_link = get_youtube_link(request.message)
+
+    # Save response in database
+    query_id = database.save_query(
+        user["id"],
+        request.message,
+        answer
+    )
 
     return {
         "response": answer,
+        "youtube_link": youtube_link,
         "id": query_id
     }
+
 
 # ---------------- History (login required) ----------------
 @app.get("/history")
